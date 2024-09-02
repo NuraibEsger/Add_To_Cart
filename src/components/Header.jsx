@@ -1,5 +1,4 @@
-import { useContext, useRef } from 'react';
-
+import { useContext, useEffect, useRef, useState } from 'react';
 import CartModal from './CartModal.jsx';
 import { CartContext } from '../store/shopping-cart-context.jsx';
 
@@ -13,13 +12,34 @@ export default function Header() {
     modal.current.open();
   }
 
+  async function handleHttpRequest() {
+    if (!navigator.onLine) {
+      alert('You are offline, set online');
+      return;
+    }
+
+    try {
+      const response = await fetch("https://localhost:32769/api/values");
+      const resData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          resData.message || "Something went wrong, failed to send request."
+        );
+      }
+      console.log(resData);
+    } catch (error) {
+      console.error('Failed to send request:', error);
+    }
+  }
+
   let modalActions = <button>Close</button>;
 
   if (cartQuantity > 0) {
     modalActions = (
       <>
         <button>Close</button>
-        <button>Checkout</button>
+        <button onClick={handleHttpRequest}>Checkout</button>
       </>
     );
   }
@@ -39,6 +59,7 @@ export default function Header() {
         <p>
           <button onClick={handleOpenCartClick}>Cart ({cartQuantity})</button>
         </p>
+        {!navigator.onLine && <p style={{ color: 'red' }}>You are offline (simulated)</p>}
       </header>
     </>
   );
